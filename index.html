@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dynamic Weather App</title>
+  <meta name="theme-color" content="#111827" />
+
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="./style.css" />
+
+  <!-- Lottie (for animated weather icons) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js" defer></script>
+  
+
+  <!-- App Logic -->
+  <script src="./script.js" defer></script>
+</head>
+<body class="theme theme--day-sunny">
+  <!-- Loading overlay -->
+  <div id="loading" class="loading hidden" aria-hidden="true">
+    <div class="spinner" aria-label="Loading"></div>
+  </div>
+
+  <!-- Toast / Error message -->
+  <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+
+  <main class="app">
+    <!-- Header: App title + unit toggle -->
+    <header class="app__header">
+      <h1 class="app__title">Weather</h1>
+
+      <!-- Unit toggle (°C / °F) -->
+      <div class="unit-toggle" title="Switch units">
+        <input type="checkbox" id="unitToggle" class="unit-toggle__input" />
+        <label for="unitToggle" class="unit-toggle__label">
+          <span class="unit-toggle__c">°C</span>
+          <span class="unit-toggle__slider" aria-hidden="true"></span>
+          <span class="unit-toggle__f">°F</span>
+        </label>
+      </div>
+    </header>
+
+    <!-- Search / Geolocation -->
+    <section class="controls">
+      <form id="searchForm" class="search" autocomplete="off">
+        <input
+          id="searchInput"
+          class="search__input"
+          type="text"
+          placeholder="Search city (e.g., Mumbai, London)"
+          aria-label="Search city"
+          required
+        />
+        <button id="searchBtn" class="btn search__btn" type="submit" aria-label="Search">Search</button>
+      </form>
+
+      <button id="geoBtn" class="btn btn--ghost" type="button" aria-label="Use my location">
+        Use My Location
+      </button>
+    </section>
+
+    <!-- Current Weather Card -->
+    <section class="card current">
+      <div class="current__top">
+        <!-- Animated icon container (Lottie mounts here) -->
+        <div id="weatherIcon" class="icon"></div>
+
+        <div class="current__meta">
+          <h2 id="cityName" class="current__city">—</h2>
+          <p id="description" class="current__desc">—</p>
+        </div>
+      </div>
+      <div id="datetime" class="datetime"></div>
+
+
+      <div class="current__main">
+        <div class="current__temp">
+          <span id="temperature" class="temp">—</span>
+          <span class="temp-unit"><sup>°</sup></span>
+        </div>
+        <div class="current__feels">
+          Feels like <span id="feelsLike">—</span>°
+        </div>
+      </div>
+
+      <div class="current__details">
+        <div class="detail">
+          <span class="detail__label">Humidity</span>
+          <span id="humidity" class="detail__value">—%</span>
+        </div>
+        <div class="detail">
+          <span class="detail__label">Wind</span>
+          <span id="wind" class="detail__value">— km/h</span>
+        </div>
+        <div class="detail">
+          <span class="detail__label">Sunrise</span>
+          <span id="sunrise" class="detail__value">—</span>
+        </div>
+        <div class="detail">
+          <span class="detail__label">Sunset</span>
+          <span id="sunset" class="detail__value">—</span>
+        </div>
+        <div class="detail">
+          <span class="detail__label">AQI</span>
+          <span id="aqi" class="detail__value">—</span>
+        </div>
+      </div>
+
+      <!-- AQI health tip -->
+      <p id="aqiTip" class="aqi-tip">—</p>
+    </section>
+
+    <!-- 5-Day Forecast -->
+    <section class="forecast">
+      <h3 class="section-title">5-Day Forecast</h3>
+      <div id="forecastContainer" class="forecast__scroller" aria-label="5 day forecast">
+        <!-- JS will inject forecast cards here -->
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="app__footer">
+      <span class="foot__note">Powered by OpenWeather • Animated icons by Lottie</span>
+    </footer>
+  </main>
+
+  <noscript>
+    Please enable JavaScript to use this app.
+  </noscript>
+</body>
+</html>
