@@ -9,12 +9,20 @@
   <!-- Google Font -->
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
+  <!-- Leaflet (for maps) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
   <!-- Styles -->
   <link rel="stylesheet" href="./style.css" />
 
   <!-- Lottie (for animated weather icons) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js" defer></script>
-  
+
+  <!-- Chart.js (for weather graph) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Leaflet (for maps) -->
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
   <!-- App Logic -->
   <script src="./script.js" defer></script>
@@ -29,18 +37,26 @@
   <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
 
   <main class="app">
-    <!-- Header: App title + unit toggle -->
+    <!-- Header: App title + unit toggle + theme toggle -->
     <header class="app__header">
       <h1 class="app__title">Weather</h1>
 
-      <!-- Unit toggle (°C / °F) -->
-      <div class="unit-toggle" title="Switch units">
-        <input type="checkbox" id="unitToggle" class="unit-toggle__input" />
-        <label for="unitToggle" class="unit-toggle__label">
-          <span class="unit-toggle__c">°C</span>
-          <span class="unit-toggle__slider" aria-hidden="true"></span>
-          <span class="unit-toggle__f">°F</span>
-        </label>
+      <div class="header-controls">
+        <!-- Unit toggle (°C / °F) -->
+        <div class="unit-toggle" title="Switch units">
+          <input type="checkbox" id="unitToggle" class="unit-toggle__input" />
+          <label for="unitToggle" class="unit-toggle__label">
+            <span class="unit-toggle__c">°C</span>
+            <span class="unit-toggle__slider" aria-hidden="true"></span>
+            <span class="unit-toggle__f">°F</span>
+          </label>
+        </div>
+
+        <!-- Dark mode toggle -->
+        <button id="themeToggle" class="btn-icon" title="Toggle dark mode" aria-label="Toggle dark/light mode">
+          <span class="icon-sun">🌙</span>
+          <span class="icon-moon" style="display:none;">☀️</span>
+        </button>
       </div>
     </header>
 
@@ -90,11 +106,11 @@
       <div class="current__details">
         <div class="detail">
           <span class="detail__label">Humidity</span>
-          <span id="humidity" class="detail__value">—%</span>
+          <span id="humidity" class="detail__value">—</span>
         </div>
         <div class="detail">
           <span class="detail__label">Wind</span>
-          <span id="wind" class="detail__value">— km/h</span>
+          <span id="wind" class="detail__value">—</span>
         </div>
         <div class="detail">
           <span class="detail__label">Sunrise</span>
@@ -112,6 +128,18 @@
 
       <!-- AQI health tip -->
       <p id="aqiTip" class="aqi-tip">—</p>
+    </section>
+
+    <!-- Temperature Graph -->
+    <section class="card chart-section">
+      <h3 class="section-title">Temperature Trend</h3>
+      <canvas id="weatherChart"></canvas>
+    </section>
+
+    <!-- Location Map -->
+    <section class="card map-section">
+      <h3 class="section-title">Location Map</h3>
+      <div id="map" class="map"></div>
     </section>
 
     <!-- 5-Day Forecast -->

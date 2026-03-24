@@ -7,6 +7,7 @@ const searchForm = document.getElementById("searchForm");
 const searchInput = document.getElementById("searchInput");
 const geoBtn = document.getElementById("geoBtn");
 const unitToggle = document.getElementById("unitToggle");
+const themeToggle = document.getElementById("themeToggle");
 
 const cityNameEl = document.getElementById("cityName");
 const descriptionEl = document.getElementById("description");
@@ -140,6 +141,7 @@ async function fetchForecast(lat, lon) {
   );
   const data = await res.json();
   renderForecast(data.list);
+  renderChart(data);
 }
 async function fetchAirQuality(lat, lon) {
   const res = await fetch(`${AIR_URL}?lat=${lat}&lon=${lon}&appid=${API_KEY}`);
@@ -159,8 +161,8 @@ function renderCurrentWeather(data) {
   descriptionEl.textContent = description;
   temperatureEl.textContent = Math.round(data.main.temp);
   feelsLikeEl.textContent = Math.round(data.main.feels_like);
-  humidityEl.textContent = data.main.humidity;
-  windEl.textContent = Math.round(data.wind.speed);
+  humidityEl.textContent = `${data.main.humidity}%`;
+  windEl.textContent = `${Math.round(data.wind.speed)} ${currentUnit === "metric" ? "km/h" : "mph"}`;
   sunriseEl.textContent = formatTime(data.sys.sunrise, data.timezone);
   sunsetEl.textContent = formatTime(data.sys.sunset, data.timezone);
 
@@ -170,6 +172,7 @@ function renderCurrentWeather(data) {
   // Apply background + animation
   setTheme(description.toLowerCase(), isDay);
   loadWeatherAnimation(weatherMain, isDay);
+  showMap(data.coord.lat, data.coord.lon);
 }
 function renderForecast(list) {
   forecastContainer.innerHTML = "";
@@ -204,6 +207,97 @@ function renderAQI(aqi) {
   aqiTipEl.textContent = tip;
 }
 
+function renderChart(forecastData) {
+  const ctx = document.getElementById("weatherChart");
+  if (!ctx) return;
+
+  // Destroy existing chart if it exists
+  if (window.weatherChartInstance) {
+    window.weatherChartInstance.destroy();
+  }
+
+  const labels = forecastData.list.slice(0, 8).map(item =>
+    new Date(item.dt * 1000).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "2-digit" })
+  );
+
+  const temps = forecastData.list.slice(0, 8).map(item =>
+    Math.round(item.main.temp)
+  );
+
+  window.weatherChartInstance = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels,
+      datasets: [{
+        label: currentUnit === "metric" ? "Temperature (°C)" : "Temperature (°F)",
+        data: temps,
+        borderColor: "rgba(255, 255, 255, 0.8)",
+        backgroundColor: "rgba(255, 255, 255, 0.1)",
+        borderWidth: 2,
+        fill: true,
+        tension: 0.4,
+        pointRadius: 5,
+        pointBackgroundColor: "rgba(255, 255, 255, 0.9)",
+        pointBorderColor: "rgba(255, 255, 255, 0.3)",
+        pointBorderWidth: 2
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: {
+        legend: {
+          labels: {
+            color: "rgba(255, 255, 255, 0.8)",
+            font: { size: 12 }
+          }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          grid: {
+            color: "rgba(255, 255, 255, 0.1)"
+          },
+          ticks: {
+            color: "rgba(255, 255, 255, 0.7)"
+          }
+        },
+        x: {
+          grid: {
+            color: "rgba(255, 255, 255, 0.05)"
+          },
+          ticks: {
+            color: "rgba(255, 255, 255, 0.7)"
+          }
+        }
+      }
+    }
+  });
+}
+
+function showMap(lat, lon) {
+  const mapEl = document.getElementById("map");
+  if (!mapEl) return;
+
+  // Destroy existing map if it exists
+  if (window.weatherMap) {
+    window.weatherMap.remove();
+  }
+
+  // Create new map
+  window.weatherMap = L.map("map").setView([lat, lon], 10);
+
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: "© OpenStreetMap contributors",
+    maxZoom: 19
+  }).addTo(window.weatherMap);
+
+  L.marker([lat, lon]).addTo(window.weatherMap)
+    .bindPopup("<strong>Your Location</strong>")
+    .openPopup();
+}
+
 // ===== EVENT LISTENERS =====
 searchForm.addEventListener("submit", e => {
   e.preventDefault();
@@ -226,5 +320,44 @@ unitToggle.addEventListener("change", () => {
   }
 });
 
+themeToggle.addEventListener("click", () => {
+  document.body.classList.toggle("dark");
+  
+  // Toggle icon visibility
+  const sunIcon = themeToggle.querySelector(".icon-sun");
+  const moonIcon = themeToggle.querySelector(".icon-moon");
+  sunIcon.style.display = sunIcon.style.display === "none" ? "inline" : "none";
+  moonIcon.style.display = moonIcon.style.display === "none" ? "inline" : "none";
+  
+  // Save preference
+  localStorage.setItem("theme", document.body.classList.contains("dark") ? "dark" : "light");
+});
+
+// Load saved theme preference
+const savedTheme = localStorage.getItem("theme");
+if (savedTheme === "dark") {
+  document.body.classList.add("dark");
+  const sunIcon = themeToggle.querySelector(".icon-sun");
+  const moonIcon = themeToggle.querySelector(".icon-moon");
+  sunIcon.style.display = "none";
+  moonIcon.style.display = "inline";
+}
+
 // ===== INIT =====
-fetchWeather("Mumbai"); // default city
+window.addEventListener("load", () => {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const lat = position.coords.latitude;
+        const lon = position.coords.longitude;
+        fetchWeatherByCoords(lat, lon);
+      },
+      () => {
+        // Fallback if geolocation fails
+        fetchWeather("Delhi");
+      }
+    );
+  } else {
+    fetchWeather("Delhi");
+  }
+});
